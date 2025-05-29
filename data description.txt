@@ -1,0 +1,28 @@
+Variable		Description
+==================================================================================
+Parcel Number		Unique Identifier for Parcels
+Address			Street Address
+BBB			Total Rooms - Bedrooms - Full Baths - Half Baths
+FinSqFt			Square Footage (Finished/Livable)
+Use			Use Code
+Year Built		Year the House was Built
+Transfer Date		Sale Date
+Amount			Sale Amount (Nominal Dollars)
+Rooms			Number of Rooms (Parsed from BBB)
+Bedrooms		Number of Bedrooms (Parsed from BBB)
+Full Baths		Number of Full Baths (Parsed from BBB)
+Half Baths		Number of Half Baths (Parsed from BBB)
+Addresses		Street Address + 'Hamilton, OH' (Used for Geolocating)
+Nippert			Distance to Nippert Stadium in km
+TQL			Distance to TQL Stadium in km
+Coordinates		Latitude and Longitude of the Parcel
+Actual Age		Sale Year Minus Year Built
+Zero Coded Age		Zero Coded Actual Age
+Negative Age Flag	Indicator for Transactions with a Negative Age
+Price			This is a Numerical Version of the Amount Variable
+School District		Name of School District
+Deed Type		Type of Deed for the Parcel
+Acreage			Parcel Size in Acres
+Owner Residence		Indicator for Owner Residing in the Property
+Foreclosure		Indicator for Foreclosures
+Real Price		Real Sales Price (Reference Month + Year = January 2020)
