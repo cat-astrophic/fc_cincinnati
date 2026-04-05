@@ -2,6 +2,7 @@
 
 # Loading libraries
 
+library(sf)
 library(AER)
 library(stargazer)
 library(sandwich)
@@ -10,8 +11,8 @@ library(kableExtra)
 library(ggplot2)
 library(dplyr)
 library(modelsummary)
-library(sf)
 library(leaflet)
+library(lfe)
 
 # Project directory info
 
@@ -33,19 +34,17 @@ tql.opened <- '5/16/2021'
 
 # Two years before event
 
-usl.a0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('8/12/2015', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('8/12/2013', '%m/%d/%Y')) # Two years before
-mls.a0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/29/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/29/2016', '%m/%d/%Y')) # Two years before
-mls.m0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('3/2/2019', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('3/2/2017', '%m/%d/%Y')) # Two years before
-tql.a0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('12/18/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('12/18/2016', '%m/%d/%Y')) # Two years before
-tql.o0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/16/2021', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/16/2019', '%m/%d/%Y')) # Two years before
+usl.a0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('8/12/2015', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('8/12/2012', '%m/%d/%Y')) # Two years before
+mls.a0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/29/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/29/2015', '%m/%d/%Y')) # Two years before
+tql.a0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('12/18/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('12/18/2015', '%m/%d/%Y')) # Two years before
+tql.o0 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/16/2021', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/16/2018', '%m/%d/%Y')) # Two years before
 
 # Two years after event
 
-usl.a1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('8/12/2015', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('8/12/2017', '%m/%d/%Y')) # Two years after
-mls.a1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/29/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/29/2020', '%m/%d/%Y')) # Two years after
-mls.m1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('3/2/2019', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('3/2/2021', '%m/%d/%Y')) # Two years before
-tql.a1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('12/18/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('12/18/2020', '%m/%d/%Y')) # Two years before
-tql.o1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/16/2021', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/16/2023', '%m/%d/%Y')) # Two years before
+usl.a1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('8/12/2015', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('8/12/2018', '%m/%d/%Y')) # Two years after
+mls.a1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/29/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/29/2021', '%m/%d/%Y')) # Two years after
+tql.a1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('12/18/2018', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('12/18/2021', '%m/%d/%Y')) # Two years before
+tql.o1 <- as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') >= as.Date('5/16/2021', '%m/%d/%Y'))*as.numeric(as.Date(data$Transfer.Date, '%m/%d/%Y') < as.Date('5/16/2024', '%m/%d/%Y')) # Two years before
 
 # Add to data.frame
 
@@ -53,8 +52,6 @@ data$Pre.USL.Announced <- usl.a0
 data$Post.USL.Announced <- usl.a1
 data$Pre.MLS.Announced <- mls.a0
 data$Post.MLS.Announced <- mls.a1
-data$Pre.MLS.Match <- mls.m0
-data$Post.MLS.Match <- mls.m1
 data$Pre.TQL.Announced <- tql.a0
 data$Post.TQL.Announced <- tql.a1
 data$Pre.TQL.Opened <- tql.o0
@@ -64,7 +61,6 @@ data$Post.TQL.Opened <- tql.o1
 
 data$usl.a <- usl.a0 + usl.a1
 data$mls.a <- mls.a0 + mls.a1
-data$mls.m <- mls.m0 + mls.m1
 data$tql.a <- tql.a0 + tql.a1
 data$tql.o <- tql.o0 + tql.o1
 
@@ -82,25 +78,19 @@ data <- data[which(data$Foreclosure == 'No'),]
 
 hist(data$Real.Price, breaks = 100)
 
-# removing 
-
-data <- data[which(data$Real.Price < quantile(data$Real.Price, .99)),]
-data <- data[which(data$Real.Price > quantile(data$Real.Price, .01)),]
-
-# Running a simple hedonic to look at outliers via residuals bc no arms length transactions indicator exists
+# Running a simple hedonic to look at outliers via residuals
 
 outlier.finder <- lm(log(Real.Price) ~ log(FinSqFt) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2)
-                     + Rooms*log(FinSqFt) + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt)
-                     + Half.Baths*log(FinSqFt) + Acreage*factor(School.District) + factor(MY)
-                     + factor(Deed.Type) + factor(Owner.Residence), data = data)
+                     + Rooms + Bedrooms + Full.Baths + Half.Baths + Acreage + factor(School.District)
+                     + factor(MY) + factor(Deed.Type) + factor(Owner.Residence), data = data)
 
 # Clustering at the school district level so that I can compare results here to main results later on
 
-outlier.finder.x <- coeftest(outlier.finder, vcov = vcovCL, cluster = ~School.District)
+outlier.finder.x <- coeftest(outlier.finder, vcov = vcovCL(outlier.finder), type = 'HC1')
 
 # Viewing the results
 
-stargazer(outlier.finder, outlier.finder.x, type = 'text')
+# stargazer(outlier.finder, outlier.finder.x, type = 'text')
 
 # Get residuals
 
@@ -112,11 +102,11 @@ hist(residuals, breaks = 100)
 abline(v =- sd(residuals)*2)
 abline(v = sd(residuals)*2)
 
-# Based on the histogram, let's keep anything within 3 standard deviations of the mean
+# Based on the histogram, let's keep anything within 2 standard deviations of the mean
 
 keep <- which(abs(residuals) < sd(residuals)*2)
 
-# Subset data based on residuals - 98.69% of the data set remains => 1.31% was dropped (dropped 5,890 obs)
+# Subset data based on residuals - 98.69% of the data set remains =>  1.31% was dropped
 
 data <- data[keep,]
 
@@ -127,273 +117,167 @@ hist(resid, breaks = 100)
 hist(data$Real.Price, breaks = 100)
 hist(log(data$Real.Price), breaks = 100)
 
+# Non-parametric price change plots
+
+p10 <- data[which(data$Nippert < 8 & data$usl.a == 1 & data$Pre.USL.Announced == 1),]
+p11 <- data[which(data$Nippert < 8 & data$usl.a == 1 & data$Post.USL.Announced == 1),]
+p11$Real.Price <- p11$Real.Price - (mean(p11[which(p11$Nippert > 3.22),]$Real.Price) - mean(p10[which(p10$Nippert > 3.22),]$Real.Price))
+pdf1 <- rbind(p10, p11)
+
+p20 <- data[which(data$Nippert < 8 & data$mls.a == 1 & data$Pre.MLS.Announced == 1),]
+p21 <- data[which(data$Nippert < 8 & data$mls.a == 1 & data$Post.MLS.Announced == 1),]
+p21$Real.Price <- p21$Real.Price - (mean(p21[which(p21$Nippert > 3.22),]$Real.Price) - mean(p20[which(p20$Nippert > 3.22),]$Real.Price))
+pdf2 <- rbind(p20, p21)
+
+p30 <- data[which(data$TQL < 8 & data$tql.a == 1 & data$Pre.TQL.Announced == 1),]
+p31 <- data[which(data$TQL < 8 & data$tql.a == 1 & data$Post.TQL.Announced == 1),]
+p31$Real.Price <- p31$Real.Price - (mean(p31[which(p31$Nippert > 3.22),]$Real.Price) - mean(p30[which(p30$Nippert > 3.22),]$Real.Price))
+pdf3 <- rbind(p30, p31)
+
+p40 <- data[which(data$TQL < 8 & data$tql.o == 1 & data$Pre.TQL.Opened == 1),]
+p41 <- data[which(data$TQL < 8 & data$tql.o == 1 & data$Post.TQL.Opened == 1),]
+p41$Real.Price <- p41$Real.Price - (mean(p41[which(p41$Nippert > 3.22),]$Real.Price) - mean(p40[which(p40$Nippert > 3.22),]$Real.Price))
+pdf4 <- rbind(p40, p41)
+
+ggplot(pdf1, aes(x = Nippert, y = Real.Price, color = factor(Post.USL.Announced))) +
+  geom_smooth(data = pdf1[which(pdf1$Pre.USL.Announced == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.95) +
+  geom_smooth(data = pdf1[which(pdf1$Post.USL.Announced == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.95) +
+  labs(
+    x = 'Distance (km)',
+    y = 'Real Transaction Price ($)',
+    title = 'LOESS Nonparametric Smoother of Prices over Distance\n - USL Announcement - '
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(c(0,8)) +
+  #geom_vline(xintercept = 2) +
+  theme(legend.position = 'bottom') +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_color_manual(name = '', breaks = c(1,0),
+                     labels = c('Post USL Announcement', 'Pre USL Announcement'),
+                     values = c('red', 'blue'))
+
+ggplot(pdf2, aes(x = Nippert, y = Real.Price, color = factor(Post.MLS.Announced))) +
+  geom_smooth(data = pdf2[which(pdf2$Pre.MLS.Announced == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.95) +
+  geom_smooth(data = pdf2[which(pdf2$Post.MLS.Announced == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.95) +
+  labs(
+    x = 'Distance (km)',
+    y = 'Real Transaction Price ($)',
+    title = 'LOESS Nonparametric Smoother of Prices over Distance\n - MLS Announcement - '
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(c(0,8)) +
+  #geom_vline(xintercept = 2) +
+  theme(legend.position = 'bottom') +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_color_manual(name = '', breaks = c(1,0),
+                     labels = c('Post MLS Announcement', 'Pre MLS Announcement'),
+                     values = c('red', 'blue'))
+
+ggplot(pdf3, aes(x = TQL, y = Real.Price, color = factor(Post.TQL.Announced))) +
+  geom_smooth(data = pdf3[which(pdf3$Pre.TQL.Announced == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.99) +
+  geom_smooth(data = pdf3[which(pdf3$Post.TQL.Announced == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.99) +
+  labs(
+    x = 'Distance (km)',
+    y = 'Real Transaction Price ($)',
+    title = 'LOESS Nonparametric Smoother of Prices over Distance\n - TQL Announcement - '
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(c(0,8)) +
+  #geom_vline(xintercept = 2) +
+  theme(legend.position = 'bottom') +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_color_manual(name = '', breaks = c(1,0),
+                     labels = c('Post TQL Announcement', 'Pre TQL Announcement'),
+                     values = c('red', 'blue'))
+
+ggplot(pdf4, aes(x = TQL, y = Real.Price, color = factor(Post.TQL.Opened))) +
+  geom_smooth(data = pdf4[which(pdf4$Pre.TQL.Opened == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.99) +
+  geom_smooth(data = pdf4[which(pdf4$Post.TQL.Opened == 1),], method = 'loess', se = TRUE, span = 0.5, level = 0.99) +
+  labs(
+    x = 'Distance (km)',
+    y = 'Real Transaction Price ($)',
+    title = 'LOESS Nonparametric Smoother of Prices over Distance\n - TQL Opened - '
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(c(0,8)) +
+  #geom_vline(xintercept = 2) +
+  theme(legend.position = 'bottom') +
+  guides(color = guide_legend(nrow = 1)) +
+  scale_color_manual(name = '', breaks = c(1,0),
+                     labels = c('Post TQL Opened', 'Pre TQL Opened'),
+                     values = c('red', 'blue'))
+
 # Creating treatment variables
 
-data$Treatment.Nippert.hm <- as.numeric(data$Nippert <= .8)
-data$Treatment.Nippert.1m <- as.numeric(data$Nippert <= 1.6) - data$Treatment.Nippert.hm
-data$Treatment.TQL.hm <- as.numeric(data$TQL <= .8)
-data$Treatment.TQL.1m <- as.numeric(data$TQL <= 1.6) - data$Treatment.TQL.hm
+data$Treatment.Nippert <- as.numeric(data$Nippert <= 2)
+data$Treatment.TQL <- as.numeric(data$TQL <= 2)
 
 # Creating control variables
 
-data$Control.Nippert <- as.numeric(data$Nippert > 1.6) * as.numeric(data$Nippert <= 8)
-data$Control.TQL <- as.numeric(data$TQL > 1.6) * as.numeric(data$TQL <= 8)
-
-# Create event-specific data.frames
-
-data$usl.a.x <- data$usl.a * (data$Treatment.Nippert.hm + data$Treatment.Nippert.1m + data$Control.Nippert)
-data$mls.a.x <- data$mls.a * (data$Treatment.Nippert.hm + data$Treatment.Nippert.1m + data$Control.Nippert)
-data$mls.m.x <- data$mls.m * (data$Treatment.Nippert.hm + data$Treatment.Nippert.1m + data$Control.Nippert)
-data$tql.a.x <- data$tql.a * (data$Treatment.TQL.hm + data$Treatment.TQL.1m + data$Control.TQL)
-data$tql.o.x <- data$tql.o * (data$Treatment.TQL.hm + data$Treatment.TQL.1m + data$Control.TQL)
-
-data.usl.a <- data[which(data$usl.a.x == 1),]
-data.mls.a <- data[which(data$mls.a.x == 1),]
-data.mls.m <- data[which(data$mls.m.x == 1),]
-data.tql.a <- data[which(data$tql.a.x == 1),]
-data.tql.o <- data[which(data$tql.o.x == 1),]
+data$Control.Nippert <- as.numeric(data$Nippert > 2) * as.numeric(data$Nippert < 8)
+data$Control.TQL <- as.numeric(data$TQL > 2) * as.numeric(data$TQL < 8)
 
 # Run models for each scenario
 
 # USL Announcement
 
-usl.mod <- lm(log(Real.Price) ~ Treatment.Nippert.hm*Post.USL.Announced + Treatment.Nippert.1m*Post.USL.Announced
-              + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-              + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-              + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-              + factor(Owner.Residence), data = data.usl.a)
-
-usl.clustered <- coeftest(usl.mod, vcov = vcovCL, cluster = ~Parcel.Number)
-
-stargazer(usl.mod, usl.clustered, type = 'text', omit = c('Deed.Type', 'School.District', 'MY'))
+usl.2k <- felm(log(Real.Price) ~ Treatment.Nippert*Post.USL.Announced + log(FinSqFt) + I(log(FinSqFt)^2)
+             + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2)
+             + Rooms + log(FinSqFt) + Bedrooms + Full.Baths + Half.Baths
+             + Acreage | School.District + MY + Deed.Type
+             + Owner.Residence | 0 | Parcel.Number, data = data[which(data$Nippert < 8 & data$usl.a == 1),])
 
 # MLS Announcement
 
-mls.mod <- lm(log(Real.Price) ~ Treatment.Nippert.hm*Post.MLS.Announced + Treatment.Nippert.1m*Post.MLS.Announced
-              + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-              + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-              + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-              + factor(Owner.Residence), data = data.mls.a)
-
-mls.clustered <- coeftest(mls.mod, vcov = vcovCL, cluster = ~Parcel.Number)
-
-stargazer(mls.mod, mls.clustered, type = 'text', omit = c('Deed.Type', 'School.District', 'MY'))
+mls.2k <- felm(log(Real.Price) ~ Treatment.Nippert*Post.MLS.Announced + log(FinSqFt) + I(log(FinSqFt)^2)
+               + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2)
+               + Rooms + log(FinSqFt) + Bedrooms + Full.Baths + Half.Baths
+               + Acreage | School.District + MY + Deed.Type
+               + Owner.Residence | 0 | Parcel.Number, data = data[which(data$Nippert < 8 & data$mls.a == 1),])
 
 # TQL Announcement
 
-tqla.mod <- lm(log(Real.Price) ~ Treatment.TQL.hm*Post.TQL.Announced + Treatment.TQL.1m*Post.TQL.Announced
-               + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-               + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-               + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-               + factor(Owner.Residence), data = data.tql.a)
+tqla.2k <- felm(log(Real.Price) ~ Treatment.TQL*Post.TQL.Announced
+                + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2)
+                + Rooms + log(FinSqFt) + Bedrooms + Full.Baths + Half.Baths
+                + Acreage | School.District + MY + Deed.Type
+                + Owner.Residence | 0 | Parcel.Number, data = data[which(data$TQL < 8 & data$tql.a == 1),])
 
-tqla.clustered <- coeftest(tqla.mod, vcov = vcovCL, cluster = ~Parcel.Number)
+# TQL Announcement - decaying
 
-stargazer(tqla.mod, tqla.clustered, type = 'text', omit = c('Deed.Type', 'School.District', 'MY'))
+tqla.4k <- felm(log(Real.Price) ~ Treatment.TQL*Post.TQL.Announced*TQL
+                + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2)
+                + Rooms + log(FinSqFt) + Bedrooms + Full.Baths + Half.Baths
+                + Acreage | School.District + MY + Deed.Type
+                + Owner.Residence | 0 | Parcel.Number, data = data[which(data$TQL < 8 & data$tql.a == 1),])
 
 # TQL Opening
 
-tqlo.mod <- lm(log(Real.Price) ~ Treatment.TQL.hm*Post.TQL.Opened + Treatment.TQL.1m*Post.TQL.Opened
-               + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-               + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-               + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-               + factor(Owner.Residence), data = data.tql.o)
+tqlo.2k <- felm(log(Real.Price) ~ Treatment.TQL*Post.TQL.Opened + log(FinSqFt) + I(log(FinSqFt)^2)
+                + log(FinSqFt) + I(log(FinSqFt)^2) + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2)
+                + Rooms + log(FinSqFt) + Bedrooms + Full.Baths + Half.Baths
+                + Acreage | School.District + MY + Deed.Type
+                + Owner.Residence | 0 | Parcel.Number, data = data[which(data$TQL < 8 & data$tql.o == 1),])
 
-tqlo.clustered <- coeftest(tqlo.mod, vcov = vcovCL, cluster = ~School.District)
+# Viewing the results
 
-stargazer(tqlo.mod, tqlo.clustered, type = 'text', omit = c('Deed.Type', 'School.District', 'MY'))
+stargazer(usl.2k, mls.2k, tqla.2k, tqlo.2k, tqla.4k, type = 'text', omit = c('Deed.Type', 'School.District', 'MY'))
 
-# All results
+# Saving the results
 
-stargazer(usl.mod, usl.clustered, mls.mod, mls.clustered, tqla.mod, tqla.clustered, tqlo.mod, tqlo.clustered, type = 'text', omit = c('Deed.Type', 'School.District', 'MY'))
+write.csv(stargazer(usl.2k, mls.2k, tqla.2k, tqlo.2k, tqla.4k, type = 'text',
+                    omit = c('Deed.Type', 'School.District', 'MY')),
+          paste0(direc, 'results/results.txt'), row.names = FALSE)
 
-write.csv(stargazer(usl.clustered, mls.clustered, tqla.clustered, tqlo.clustered, omit = c('Deed.Type', 'School.District', 'MY')), paste0(direc, 'results/results_robust.txt'), row.names = FALSE)
+write.csv(stargazer(usl.2k, mls.2k, tqla.2k, tqlo.2k, tqla.4k,
+                    omit = c('Deed.Type', 'School.District', 'MY')),
+          paste0(direc, 'results/results_tex.txt'), row.names = FALSE)
 
-write.csv(stargazer(usl.mod, mls.mod, tqla.mod, tqlo.mod, type = 'text', omit = c('Deed.Type', 'School.District', 'MY')), paste0(direc, 'results/results_raw.txt'), row.names = FALSE)
-
-# Creating figures incrementing a single treatment radius over distance from the stadiums
-
-usl.a.increments.co <- c()
-mls.a.increments.co <- c()
-tql.a.increments.co <- c()
-tql.o.increments.co <- c()
-
-usl.a.increments.se <- c()
-mls.a.increments.se <- c()
-tql.a.increments.se <- c()
-tql.o.increments.se <- c()
-
-for (i in 5:16) {
-
-  print(i)
-
-  data.usl.a$Treated <- as.numeric(data.usl.a$Nippert <= i/10)
-
-  usl.in <- lm(log(Real.Price) ~ Treated*Post.USL.Announced + log(FinSqFt) + I(log(FinSqFt)^2)
-               + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-               + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-               + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-               + factor(Owner.Residence), data = data.usl.a)
-
-  usl.in.cl <- coeftest(usl.in, vcov = vcovCL, cluster = ~Parcel.Number)
-
-  xxx <- broom::tidy(usl.in.cl)
-  id <- which(xxx$term == 'Treated:Post.USL.Announced')
-
-  usl.a.increments.co <- c(usl.a.increments.co, xxx$estimate[id])
-  usl.a.increments.se <- c(usl.a.increments.se, xxx$std.error[id])
-
-}
-
-for (i in 5:16) {
-
-  print(i)
-
-  data.mls.a$Treated <- as.numeric(data.mls.a$Nippert <= i/10)
-
-  mls.in <- lm(log(Real.Price) ~ Treated*Post.MLS.Announced + log(FinSqFt) + I(log(FinSqFt)^2)
-               + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-               + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-               + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-               + factor(Owner.Residence), data = data.mls.a)
-
-  mls.in.cl <- coeftest(mls.in, vcov = vcovCL, cluster = ~Parcel.Number)
-
-  xxx <- broom::tidy(mls.in.cl)
-  id <- which(xxx$term == 'Treated:Post.MLS.Announced')
-
-  mls.a.increments.co <- c(mls.a.increments.co, xxx$estimate[id])
-  mls.a.increments.se <- c(mls.a.increments.se, xxx$std.error[id])
-
-}
-
-for (i in 5:16) {
-
-  print(i)
-
-  data.tql.a$Treated <- as.numeric(data.tql.a$TQL <= i/10)
-
-  tql.in <- lm(log(Real.Price) ~ Treated*Post.TQL.Announced + log(FinSqFt) + I(log(FinSqFt)^2)
-               + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-               + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-               + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-               + factor(Owner.Residence), data = data.tql.a)
-
-  tql.in.cl <- coeftest(tql.in, vcov = vcovCL, cluster = ~Parcel.Number)
-
-  xxx <- broom::tidy(tql.in.cl)
-  id <- which(xxx$term == 'Treated:Post.TQL.Announced')
-
-  tql.a.increments.co <- c(tql.a.increments.co, xxx$estimate[id])
-  tql.a.increments.se <- c(tql.a.increments.se, xxx$std.error[id])
-
-}
-
-for (i in 5:16) {
-
-  print(i)
-
-  data.tql.o$Treated <- as.numeric(data.tql.o$TQL <= i/10)
-
-  tql.in <- lm(log(Real.Price) ~ Treated*Post.TQL.Opened + log(FinSqFt) + I(log(FinSqFt)^2)
-               + log(Zero.Coded.Age + 1) + I(log(Zero.Coded.Age + 1)^2) + Rooms*log(FinSqFt)
-               + Bedrooms*log(FinSqFt) + Full.Baths*log(FinSqFt) + Half.Baths*log(FinSqFt)
-               + Acreage*factor(School.District) + factor(MY) + factor(Deed.Type)
-               + factor(Owner.Residence), data = data.tql.o)
-
-  tql.in.cl <- coeftest(tql.in, vcov = vcovCL, cluster = ~Parcel.Number)
-
-  xxx <- broom::tidy(tql.in.cl)
-  id <- which(xxx$term == 'Treated:Post.TQL.Opened')
-
-  tql.o.increments.co <- c(tql.o.increments.co, xxx$estimate[id])
-  tql.o.increments.se <- c(tql.o.increments.se, xxx$std.error[id])
-
-}
-
-# Plotting the results with both sets of standard errors
-
-Distance <- c(5:16) * 1000 / 10
-Breaks <- c(1:10)/ 2 * 1000
-Coefficient <- usl.a.increments.co
-SE.low <- Coefficient - 1.96*usl.a.increments.se
-SE.high <- Coefficient + 1.96*usl.a.increments.se
-res.df <- as.data.frame(cbind(Distance, Coefficient, SE.low, SE.high))
-
-png(paste(direc, 'figures/usl_plot.png', sep = ''))
-
-ggplot(data = res.df, aes(x = Distance, y = Coefficient)) +
-  geom_line(size = 1, color = 'red4') +
-  geom_ribbon(aes(ymin = SE.low, ymax = SE.high), size = 1, alpha = 0.5, color = 'orange') +
-  xlab('Distance in Meters') +
-  ylab('Hedonic Coefficient') +
-  labs(title = 'Estimated Effect of USL Announcement w.r.t. Distance') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_continuous(breaks = Breaks) +
-  geom_hline(yintercept = 0, size = 2)
-
-dev.off()
-
-Coefficient <- mls.a.increments.co
-SE.low <- Coefficient - 1.96*mls.a.increments.se
-SE.high <- Coefficient + 1.96*mls.a.increments.se
-res.df <- as.data.frame(cbind(Distance, Coefficient, SE.low, SE.high))
-
-png(paste(direc, 'figures/mls_plot.png', sep = ''))
-
-ggplot(data = res.df, aes(x = Distance, y = Coefficient)) +
-  geom_line(size = 1, color = 'red4') +
-  geom_ribbon(aes(ymin = SE.low, ymax = SE.high), size = 1, alpha = 0.5, color = 'orange') +
-  xlab('Distance in Meters') +
-  ylab('Hedonic Coefficient') +
-  labs(title = 'Estimated Effect of MLS Announcement w.r.t. Distance') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_continuous(breaks = Breaks) +
-  geom_hline(yintercept = 0, size = 2)
-
-dev.off()
-
-Coefficient <- tql.a.increments.co
-SE.low <- Coefficient - 1.96*tql.a.increments.se
-SE.high <- Coefficient + 1.96*tql.a.increments.se
-res.df <- as.data.frame(cbind(Distance, Coefficient, SE.low, SE.high))
-
-png(paste(direc, 'figures/tqla_plot.png', sep = ''))
-
-ggplot(data = res.df, aes(x = Distance, y = Coefficient)) +
-  geom_line(size = 1, color = 'red4') +
-  geom_ribbon(aes(ymin = SE.low, ymax = SE.high), size = 1, alpha = 0.5, color = 'orange') +
-  xlab('Distance in Meters') +
-  ylab('Hedonic Coefficient') +
-  labs(title = 'Estimated Effect of TQL Announcement w.r.t. Distance') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_continuous(breaks = Breaks) +
-  geom_hline(yintercept = 0, size = 2)
-
-dev.off()
-
-Coefficient <- tql.o.increments.co
-SE.low <- Coefficient - 1.96*tql.o.increments.se
-SE.high <- Coefficient + 1.96*tql.o.increments.se
-res.df <- as.data.frame(cbind(Distance, Coefficient, SE.low, SE.high))
-
-png(paste(direc, 'figures/tqlo_plot.png', sep = ''))
-
-ggplot(data = res.df, aes(x = Distance, y = Coefficient)) +
-  geom_line(size = 1, color = 'red4') +
-  geom_ribbon(aes(ymin = SE.low, ymax = SE.high), size = 1, alpha = 0.5, color = 'orange') +
-  xlab('Distance in Meters') +
-  ylab('Hedonic Coefficient') +
-  labs(title = 'Estimated Effect of TQL Opening w.r.t. Distance') +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  scale_x_continuous(breaks = Breaks) +
-  geom_hline(yintercept = 0, size = 2)
-
-dev.off()
-
-# Leaflets
-
-# Convert to spatial data.frame
+# Create a spatial dataframe
 
 lats <- c()
 lons <- c()
@@ -401,81 +285,46 @@ lons <- c()
 for (i in 1:nrow(data)) {
   
   print(i)
-  raw.text <- strsplit(data$Coordinates[i], ',')
-  lat <- gsub(' ', '', raw.text[[1]][1], fixed = TRUE)
-  lat <- gsub('(', '', lat, fixed = TRUE)
-  lon <- gsub(' ', '', raw.text[[1]][2], fixed = TRUE)
-  lon <- gsub(')', '', lon, fixed = TRUE)
-  lats <- c(lats, as.numeric(lat))
-  lons <- c(lons, as.numeric(lon))
+  lats <- c(lats, as.numeric(substr(strsplit(data$Coordinates[i], ', ')[[1]][1], 2, nchar(strsplit(data$Coordinates[i], ', ')[[1]][1]))))
+  lons <- c(lons, as.numeric(substr(strsplit(data$Coordinates[i], ', ')[[1]][2], 1, nchar(strsplit(data$Coordinates[i], ', ')[[1]][2])-1)))
   
 }
 
-data$latitude <- lats
-data$longitude <- lons
+data$lon <- lats
+data$lat <- lons
 
-datax <- st_as_sf(data, coords = c('longitude', 'latitude'), crs = 4269)
+xxx <- st_as_sf(data, coords = c('lat', 'lon'))
+xxx <- st_set_crs(xxx, 4326)
 
-# Subset
+# Leaflets
 
-data.usl.ax <- datax[which(datax$usl.a.x == 1),]
-data.mls.ax <- datax[which(datax$mls.a.x == 1),]
-data.tql.ax <- datax[which(datax$tql.a.x == 1),]
-data.tql.ox <- datax[which(datax$tql.o.x == 1),]
+xxx$PALN <- xxx$Treatment.Nippert + 2*xxx$Control.Nippert
+xxx$PALT <- xxx$Treatment.TQL + 2*xxx$Control.TQL
 
-data.usl.ax$colorx <- data.usl.ax$Treatment.Nippert.hm + 2*data.usl.ax$Treatment.Nippert.1m
-data.mls.ax$colorx <- data.mls.ax$Treatment.Nippert.hm + 2*data.mls.ax$Treatment.Nippert.1m
-data.tql.ax$colorx <- data.tql.ax$Treatment.TQL.hm + 2*data.tql.ax$Treatment.TQL.1m
-data.tql.ox$colorx <- data.tql.ox$Treatment.TQL.hm + 2*data.tql.ox$Treatment.TQL.1m
+paln <- colorNumeric(palette = c('white', 'black', 'red3'), domain = xxx$PALN)
+palt <- colorNumeric(palette = c('white', 'black', 'red3'), domain = xxx$PALT)
 
-# Add legend info
+leaflet(xxx[which(xxx$Nippert < 8 & xxx$usl.a == 1),]$geometry) %>% addTiles() %>% setView(lat = 39.1311213, lng = -84.5162298, zoom = 12) %>%
+  addCircleMarkers(lat = 39.1311213, lng = -84.5162298, radius = 6.66, color = 'blue', fillOpacity = 1) %>%
+  addCircleMarkers(radius = 1, fillOpacity = 1, col = paln(xxx[which(xxx$Nippert < 8 & xxx$usl.a == 1),]$PALN)) %>%
+  addCircles(lat = 39.1311213, lng = -84.5162298, radius = 8000, col = 'black', fillOpacity = 0, weight = 10) %>%
+  addCircles(lat = 39.1311213, lng = -84.5162298, radius = 2000, col = 'black', fillOpacity = 0, weight = 10)
 
-labs <- c('Control', 'Half Mile Radius', 'One Mile Radius')
+leaflet(xxx[which(xxx$Nippert < 8 & xxx$mls.a == 1),]$geometry) %>% addTiles() %>% setView(lat = 39.1311213, lng = -84.5162298, zoom = 12) %>%
+  addCircleMarkers(lat = 39.1311213, lng = -84.5162298, radius = 6.66, color = 'blue', fillOpacity = 1) %>%
+  addCircleMarkers(radius = 1, fillOpacity = 1, col = paln(xxx[which(xxx$Nippert < 8 & xxx$mls.a == 1),]$PALN)) %>%
+  addCircles(lat = 39.1311213, lng = -84.5162298, radius = 8000, col = 'black', fillOpacity = 0, weight = 10) %>%
+  addCircles(lat = 39.1311213, lng = -84.5162298, radius = 2000, col = 'black', fillOpacity = 0, weight = 10)
 
-data.usl.ax$leg <- labs[data.usl.ax$colorx+1]
-data.mls.ax$leg <- labs[data.mls.ax$colorx+1]
-data.tql.ax$leg <- labs[data.tql.ax$colorx+1]
-data.tql.ox$leg <- labs[data.tql.ox$colorx+1]
+leaflet(xxx[which(xxx$TQL < 8 & xxx$tql.a == 1),]$geometry) %>% addTiles() %>% setView(lat = 39.1111789, lng = -84.5222288, zoom = 12) %>%
+  addCircleMarkers(lat = 39.1111789, lng = -84.5222288, radius = 6.66, color = 'blue', fillOpacity = 1) %>%
+  addCircleMarkers(radius = 1, fillOpacity = 1, col = palt(xxx[which(xxx$TQL < 8 & xxx$tql.a == 1),]$PALT)) %>%
+  addCircles(lat = 39.1111789, lng = -84.5222288, radius = 8000, col = 'black', fillOpacity = 0, weight = 10) %>%
+  addCircles(lat = 39.1111789, lng = -84.5222288, radius = 2000, col = 'black', fillOpacity = 0, weight = 10)
 
-# Stadium locations
-
-sdf <- as.data.frame(cbind(c('Nippert', 'TQL'), c(39.131121300000004, 39.111), c(-84.51622983928571, -84.52053)))
-colnames(sdf) <- c('Stadium', 'lat', 'lon')
-sdf <- st_as_sf(sdf, coords = c('lon', 'lat'), crs = 4269)
-
-# Plot
-
-pal <- colorFactor(c('black', 'red4', 'orange'), domain = labs)
-
-leaflet(data.usl.ax) %>% setView(lng = -84.51622983928571, lat = 39.131121300000004, zoom = 12) %>% addTiles() %>%
-  addCircles(data = sdf[1,], radius = 200, color = 'blue', weight = 3, fill = TRUE, fillOpacity = 1) %>%
-  addCircleMarkers(radius = .05, opacity = 1, color = pal(data.usl.ax$leg)) %>%
-  addCircles(data = sdf[1,], radius = 800, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[1,], radius = 1600, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[1,], radius = 8000, color = 'black', weight = 3, fill = FALSE) %>%
-  addLegend(position = 'bottomright', pal = pal, values = data.usl.ax$leg, title = 'Legend')
-
-leaflet(data.mls.ax) %>% setView(lng = -84.51622983928571, lat = 39.131121300000004, zoom = 12) %>% addTiles() %>%
-  addCircles(data = sdf[1,], radius = 200, color = 'blue', weight = 3, fill = TRUE, fillOpacity = 1) %>%
-  addCircleMarkers(radius = .05, opacity = 1, color = pal(data.mls.ax$leg)) %>%
-  addCircles(data = sdf[1,], radius = 800, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[1,], radius = 1600, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[1,], radius = 8000, color = 'black', weight = 3, fill = FALSE) %>%
-  addLegend(position = 'bottomright', pal = pal, values = data.mls.ax$leg, title = 'Legend')
-
-leaflet(data.tql.ax) %>% setView(lng = -84.52053, lat = 39.111, zoom = 12) %>% addTiles() %>%
-  addCircles(data = sdf[2,], radius = 200, color = 'blue', weight = 3, fill = TRUE, fillOpacity = 1) %>%
-  addCircleMarkers(radius = .05, opacity = 1, color = pal(data.tql.ax$leg)) %>%
-  addCircles(data = sdf[2,], radius = 800, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[2,], radius = 1600, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[2,], radius = 8000, color = 'black', weight = 3, fill = FALSE) %>%
-  addLegend(position = 'bottomright', pal = pal, values = data.tql.ax$leg, title = 'Legend')
-
-leaflet(data.tql.ox) %>% setView(lng = -84.52053, lat = 39.111, zoom = 12) %>% addTiles() %>%
-  addCircles(data = sdf[2,], radius = 200, color = 'blue', weight = 3, fill = TRUE, fillOpacity = 1) %>%
-  addCircleMarkers(radius = .05, opacity = 1, color = pal(data.tql.ox$leg)) %>%
-  addCircles(data = sdf[2,], radius = 800, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[2,], radius = 1600, color = 'black', weight = 3, fill = FALSE) %>%
-  addCircles(data = sdf[2,], radius = 8000, color = 'black', weight = 3, fill = FALSE) %>%
-  addLegend(position = 'bottomright', pal = pal, values = data.tql.ox$leg, title = 'Legend')
+leaflet(xxx[which(xxx$TQL < 8 & xxx$tql.o == 1),]$geometry) %>% addTiles() %>% setView(lat = 39.1111789, lng = -84.5222288, zoom = 12) %>%
+  addCircleMarkers(lat = 39.1111789, lng = -84.5222288, radius = 6.66, color = 'blue', fillOpacity = 1) %>%
+  addCircleMarkers(radius = 1, fillOpacity = 1, col = palt(xxx[which(xxx$TQL < 8 & xxx$tql.o == 1),]$PALT)) %>%
+  addCircles(lat = 39.1111789, lng = -84.5222288, radius = 8000, col = 'black', fillOpacity = 0, weight = 10) %>%
+  addCircles(lat = 39.1111789, lng = -84.5222288, radius = 2000, col = 'black', fillOpacity = 0, weight = 10)
 
